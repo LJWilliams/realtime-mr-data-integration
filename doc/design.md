@@ -1,209 +1,268 @@
----
-ajs-atl-token: b8a3e6ea787cee4135e0f4a8fbaa91191f8099c6
-ajs-base-url: 'https://team.bcchr.ca'
-ajs-build-number: 6211
-ajs-confluence-flavour: VANILLA
-ajs-connection-timeout: 10000
-ajs-date.format: 'MMM dd, yyyy'
-ajs-discovered-plugin-features: '\$discoveredList'
-ajs-enabled-dark-features: 'clc.quick.create,confluence.view.edit.transition,cql.search.screen,confluence-inline-comments-resolved,notification.plugin.api.enabled.com.atlassian.confluence.plugins.sharepage.api.ShareContentEvent,notification.plugin.api.enabled.com.atlassian.confluence.plugins.mentions.api.ConfluenceMentionEvent,nps.survey.inline.dialog,confluence.efi.onboarding.new.templates,notification.plugin.api.enabled.com.atlassian.confluence.event.events.security.ForgotPasswordEvent,pdf-preview,notification.plugin.api.enabled.com.atlassian.confluence.plugins.tasklist.event.SendTaskEmailEvent,notification.plugin.api.enabled.com.atlassian.confluence.event.events.content.page.async.PageMovedEvent,previews.sharing,previews.versions,notification.plugin.api.enabled.com.atlassian.confluence.plugins.files.notifications.event.FileContentUpdateEvent,file-annotations,notification.plugin.api.enabled.com.atlassian.confluence.event.events.content.attachment.AttachmentBatchUploadCompletedEvent,confluence.efi.onboarding.rich.space.content,notification.plugin.api.enabled.com.atlassian.confluence.event.events.content.comment.CommentCreateEvent,notification.plugin.api.enabled.com.atlassian.confluence.efi.emails.events.OnboardingLessUsersEvent,notification.plugin.api.enabled.com.atlassian.confluence.plugins.files.notifications.event.FileContentRemoveEvent,confluence.wrap.macro,atlassian.aui.raphael.disabled,previews.conversion-service,notification.plugin.api.enabled.com.atlassian.confluence.event.events.content.comment.CommentUpdateEvent,notification.plugin.api.enabled.com.atlassian.confluence.event.events.follow.FollowEvent,notification.plugin.api.enabled.com.atlassian.confluence.event.events.content.page.async.PageEditedEvent,notification.plugin.api.enabled.com.atlassian.confluence.event.events.content.blogpost.BlogPostCreateEvent,previews.trigger-all-file-types,notification.plugin.api.enabled.com.atlassian.confluence.plugins.inlinecomments.events.InlineCommentResolveEvent,notification.plugin.api.enabled.com.atlassian.confluence.event.events.like.LikeCreatedEvent,notification.plugin.api.enabled.com.atlassian.confluence.plugins.inlinecomments.events.InlineCommentCreateEvent,previews.sharing.pushstate,confluence-inline-comments-rich-editor,notification.plugin.api.enabled.com.atlassian.confluence.event.events.content.blogpost.BlogPostUpdateEvent,file-annotations.likes,notification.plugin.api.enabled.com.atlassian.confluence.event.events.content.page.async.PageCreatedEvent,notification.plugin.api.enabled.com.atlassian.confluence.plugins.files.notifications.event.FileContentMentionUpdateEvent,notification.plugin.api.enabled.com.atlassian.confluence.efi.emails.events.OnboardingNoSpaceCreatedEvent,notification.plugin.api.enabled.com.atlassian.confluence.plugins.hipchat.api.events.HipChatUserMapped,notification.plugin.api.enabled.com.atlassian.confluence.plugins.sharepage.api.ShareAttachmentEvent,confluence-inline-comments,quick-reload-inline-comments-flags,confluence-inline-comments-dangling-comment,notification.plugin.api.enabled.com.atlassian.confluence.event.events.content.blogpost.BlogPostMovedEvent'
-ajs-global-settings-attachment-max-size: 524288000
-ajs-is-confluence-admin: false
-ajs-keyboardshortcut-hash: 5719cc3c66aeef440b6a65e7697d68b0
-ajs-remote-user-has-licensed-access: false
-ajs-static-resource-url-prefix: '/s/en\_GB/6211/3938a2601e8fc8d1decf2078567a8651fae8f539.1/\_'
-ajs-team-calendars-display-time-format: displayTimeFormat12
-ajs-use-keyboard-shortcuts: true
-ajs-user-date-pattern: dd MMM yyyy
-ajs-user-locale: 'en\_GB'
-ajs-version-number: '5.9.4'
-atlassian-token: b8a3e6ea787cee4135e0f4a8fbaa91191f8099c6
-confluence-base-url: 'https://team.bcchr.ca'
-confluence-request-time: 1483752170748
-gliffy-license-quantity: 500
-gliffy-license-type: 'LicenseType&lt;ACADEMIC&gt;'
-robots:
-- 'noindex,nofollow'
-- noarchive
-stp-license-days-to-expiry:
-- 190
-- 190
-stp-license-is-admin:
-- false
-- false
-stp-license-product-name:
-- Confluence
-- Confluence
-stp-license-should-keep-banner-hidden:
-- true
-- true
-title: 'Log In - BCCHR- Team Portal'
-viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no'
----
+Realtime FMRI Design Document
+=============================
 
-<div id="stp-licenseStatus-banner">
+  ------------------------------------------------------------------------------------------------------------------------------------------
+  **Target release**    2017-04-05
+  --------------------- --------------------------------------------------------------------------------------------------------------------
+  **Epic**              1.  As a user, I can monitor data quality in real time to keep participants from having to return for repeat scans
+                        
+                        2.  As a user, I can get all my realtime data streams in one easy to visualize place to help with decision making
+                        
+                        3.  As a user, I want to give my participant biofeedback to improve task performance
+                        
+                        
 
-</div>
+  **Document status**   DRAFT
 
-<div id="page">
+  **Document owner**    [Lynne Williams](file://localhost/display/~lwilliams)
 
-<div id="full-height-container">
+  **Designer**          [Lynne Williams](file://localhost/display/~lwilliams)
 
-<div id="header-precursor">
+  **Developers**        [Lynne Williams](file://localhost/display/~lwilliams)
 
-<div class="cell">
+  **QA**                [Danny Kim](file://localhost/display/~dkim)
+  ------------------------------------------------------------------------------------------------------------------------------------------
 
-</div>
+ 
 
-</div>
+Goals
+-----
 
-<div class="aui-header-inner">
+For scientists and clinicians who need to ensure high data quality, the
+realtime fMRI system is a data quality management tool that will provide
+a single point of access to monitoring structural, functional, and
+physiological data streams from the GE Discovery 750 MR scanner and
+peripheral equipment at the BC Children's Core 3T MRI Research Facility
+and the Brain Mapping and Neurotechnology Laboratory. The system will
+present data streaming in near-realtime, flag scans with high levels of
+motion, and provide 'quick and dirty' analyses of functional data. This
+system will reduce motion in the final fMRI scans by 10% over the first
+year by allowing scientists to visualize motion and physiological
+signals during scanning. Unlike the current workflow, the realtime data
+monitoring system will assess known potential data quality issues and
+automatically generate reports in compliance with UBC Ethics and patient
+confidentiality requirements.
 
-<div class="aui-header-before">
+-   Develop an extensible platform for a family of related products
 
-[<span class="aui-icon aui-icon-small aui-iconfont-appswitcher">Linked
-Applications</span>](#app-switcher){.aui-dropdown2-trigger
-.app-switcher-trigger}
-<div id="app-switcher" class="aui-dropdown2 aui-style-default">
+-   Build comprehensive GUI interface
 
-<div class="app-switcher-loading">
+-   Improve functional data quality by 10% over the first year
 
-Loading…
+Background and strategic fit
+----------------------------
 
-</div>
+Assumptions
+-----------
 
-</div>
+-   User will primarily access the data collection/streaming software
+    from a laptop computer
 
-</div>
+-   Computer will run Linux or Mac OS
 
-<div class="aui-header-primary">
+-   Software needs to be portable across OS
 
-[![BCCHR- Team Portal](/download/attachments/6324561/atl.site.logo?version=2&modificationDate=1475157992000&api=v2)<span class="aui-header-logo-text">BCCHR- Team Portal</span>](/) {#logo .aui-header-logo .aui-header-logo-custom}
-===================================================================================================================================================================================
+-   Visualization tool will require a tablet version and network
+    streaming
 
--   [<span>Ideation</span>](/plugins/servlet/ideation){#ideation-header-action
-    .aui-nav-imagelink}
--   
+-   Backend needs to be open-source
 
-</div>
+-   Software needs to be able to make Matlab calls to another machine
 
-<div class="aui-header-secondary">
+Iteration & Release Plan
+------------------------
 
--   [<span
-    class="aui-icon aui-icon-small aui-iconfont-help">Help</span>](# "Help"){#help-menu-link
-    .aui-nav-link .aui-dropdown2-trigger}
-    <div class="aui-dropdown2-section">
+  **Target Iteration Length**   2 weeks
+  ----------------------------- ---------
+  **Iterations per Release**    8-12
 
-    -   [Online
-        Help](https://docs.atlassian.com/confluence/docs-59/Getting+Help+And+Support "Visit the Confluence documentation home"){#confluence-help-link}
-    -   [Keyboard
-        Shortcuts](# "View available keyboard shortcuts"){#keyboard-shortcuts-link}
-    -   [Feed
-        Builder](/dashboard/configurerssfeed.action "Create your custom RSS feed."){#feed-builder-link}
-    -   [What’s
-        new](https://confluence.atlassian.com/display/DOC/Confluence+5.9+Release+Notes){#whats-new-menu-link}
-    -   [Available
-        Gadgets](# "Browse gadgets provided by Confluence"){#gadget-directory-link
-        .user-item .administration-link}
-    -   [About
-        Confluence](/aboutconfluencepage.action "Get more information about Confluence"){#confluence-about-link}
+Requirements
+------------
 
-    </div>
+  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  **\#**   **Title**                       **User Story**                                                                                                                                                                                     **Importance**   **Release.Iteration**   **Constraints**                                                                                **Notes**
+  -------- ------------------------------- -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ---------------- ----------------------- ---------------------------------------------------------------------------------------------- --------------------------------------------------------------
+  1                                        As a neuroimager, I want to be able to collect physiological information about my participant to help in data analysis                                                                             *Must have*                              -   Make sure it works with all physiological data channels streaming off of the MRI scanner    
+                                                                                                                                                                                                                                                                                                                                                                                      
+                                                                                                                                                                                                                                                                                                                                                                                      
 
--   -   -   -   [Log in](/login.action){#login-link .user-item
-    .login-link}
+  2                                        As a neuroimager, I want to be able to visualize physiological data from the MR scanner in real time                                                                                               *Must have*                              -   Make sure that data plotting tools do not interfere with accurate data collection           
+                                                                                                                                                                                                                                                                                                                                                                                      
+                                                                                                                                                                                                                                                                                       -   Make the display simple to read                                                            
+                                                                                                                                                                                                                                                                                                                                                                                      
+                                                                                                                                                                                                                                                                                                                                                                                      
 
-</div>
+  3                                        As a neuroimager, I want my physiological data to be synchronized to the MR scanner                                                                                                                *Must have*                              -   Make sure that the MR scanner is used as the master clock                                   
+                                                                                                                                                                                                                                                                                                                                                                                      
+                                                                                                                                                                                                                                                                                       -   Make sure that the timing of the signals is aligned                                        
+                                                                                                                                                                                                                                                                                                                                                                                      
+                                                                                                                                                                                                                                                                                                                                                                                      
 
-</div>
+  4        Detect head motion              As a neuroimager, I want to be able to detect participant head motion in the MRI scanner to eliminate as many bad scans as possible                                                                *Must have*      1.1                                                                                                                    -   Bob D's code doesn't run anymore. Backend is deprecated.
+                                                                                                                                                                                                                                                                                                                                                                                      
+                                                                                                                                                                                                                                                                                                                                                                                      
 
-\
-<div id="main" class="aui-page-panel">
+  5        Online data analysis            As a neuroimager, I want to be able to visualize fMRI functional activity in near real time to make sure that the participant is on task                                                                                                    -   Make sure that results compare favourably to offline results                                
+                                                                                                                                                                                                                                                                                                                                                                                      
+                                                                                                                                                                                                                                                                                       -   Preliminary results should be available during or immediately following the scan           
+                                                                                                                                                                                                                                                                                                                                                                                      
+                                                                                                                                                                                                                                                                                                                                                                                      
 
-<div id="sidebar-container">
+  6                                        As a neuroimager, I want to get online tractography results to be able to determine DTI scan quality                                                                                                                                                                                                                                        
 
-</div>
+  7        Flag atypical/outlier scans     As the director of brain mapping, I want questionable data to be flagged as being an outlier to help me determine if it is bad data or a veritable outlier                                                                                                                                                                                  
 
-<div id="login-container">
+  8        Seamless data transfer          As a user, I want data transfer to be seamless to keep data viewing in real time                                                                                                                                                                                                                                                            
 
-<div class="login-section">
+  9        Data visualization              As a user, I would like channels for all the data types that I use to give me all of my information in one spot                                                                                                                                                                                                                             
 
-Log in
-------
+  10                                       As a neuroimager, I would like to simultaneously view my EEG, NIRS, physiological and MR data in one place                                                                                                                                  -   Make sure that peripheral equipment is 'plug-and-play' &gt; no additional setup required    
+                                                                                                                                                                                                                                                                                                                                                                                      
+                                                                                                                                                                                                                                                                                                                                                                                      
 
-<div id="action-messages">
+  11       Feedback re: head motion        As an MRI Patient/Participant I want feedback when I am moving too much to get a good picture                                                                                                                                                                                                                                               
 
-</div>
+  12       Feedback re: task performance   As an MRI Patient/Participant I want feedback when I am off task                                                                                                                                                                                                                                                                            
 
-<span>Log in to Confluence</span>
-<div class="field-group">
+  13       Integrate with MATATABI         As director of Brain Mapping, I want the realtime software to integrate with MATATABI                                                                                                                                                                                                                                                       
 
-Username
+  14                                       As a brain mapping team member, I want the motion detection software to show the same features in the simulator as in the scanner to make sure that the child is fully prepared for MRI scanning                                                                                                                                            
 
-</div>
+  15                                       As a MRI user, I want a simulation of what motion looks like to train students/RA in quality control monitoring                                                                                                                                                                                                                             
+  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-<div class="field-group">
+ 
 
-Password
+### Use Case 1
 
-</div>
+  ------
+    --
+    --
 
-<div class="group">
+  ------
+  ------
 
-<div class="checkbox">
+### Use Case 2: Release 1 Development
 
-Remember me
+  ------
+    --
+    --
 
-</div>
+  ------
+  ------
 
-</div>
+User interaction and design
+---------------------------
 
-<div class="field-group form-buttons compact-form-buttons">
+### Motion Detection Window
 
-[Forgot your password?](/forgotuserpassword.action){#forgot-password
-.aui-button .aui-style .aui-button-link}
+  ------
+    --
+    --
 
-</div>
+  ------
+  ------
 
-</div>
+Questions
+---------
 
-</div>
+Below is a list of questions to be addressed as a result of this
+requirements document:
 
-</div>
+  **Question**   **Outcome**
+  -------------- -------------
+                 
 
-<div id="footer" role="contentinfo">
+Not Doing
+---------
 
-<div class="section footer-body">
+-   Not doing biofeedback for initial release (may be considered for a
+    later release)
 
--   [Deutsch](/login.action?language=de_DE)
--   [English](/login.action?language=en_GB)
--   [Español](/login.action?language=es_ES)
--   [Français](/login.action?language=fr_FR)
--   [日本語](/login.action?language=ja_JP)
+Revision History
+----------------
 
-<!-- -->
+  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  **Version**                                                                                    **Date**                  **Comment**
+  ---------------------------------------------------------------------------------------------- ------------------------- ------------------------------------------------------------------------------------------------------
+  **[Current Version](file://localhost/display/BL/viewpage.action%3fpageId=7018482) (v. 36) **   **Dec 16, 2016 13:51 **   [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a):\
+                                                                                                                           updated iteration field
 
--   Powered by [Atlassian
-    Confluence](http://www.atlassian.com/software/confluence){.hover-footer-link}
-    <span id="footer-build-information">5.9.4</span>, [Team
-    Collaboration
-    Software](http://www.atlassian.com/software/confluence/overview/team-collaboration-software?utm_source=confluence-footer){.hover-footer-link}
--   Printed by Atlassian Confluence 5.9.4, Team Collaboration Software.
--   [Report a
-    bug](https://jira.atlassian.com/browse/CONF){.hover-footer-link}
--   [Atlassian
-    News](http://www.atlassian.com/about/connected.jsp?s_kwcid=Confluence-stayintouch){.hover-footer-link}
+  [v. 35](file://localhost/display/BL/viewpage.action%3fpageId=7019084)                          Dec 16, 2016 13:31        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a):\
+                                                                                                                           Updated use case; Created use case for Release 1.0
 
-<div id="footer-logo">
+  [v. 34](file://localhost/display/BL/viewpage.action%3fpageId=7019082)                          Dec 16, 2016 13:21        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
 
-[Atlassian](http://www.atlassian.com/)
+  [v. 33](file://localhost/display/BL/viewpage.action%3fpageId=7019059)                          Dec 16, 2016 11:33        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
 
-</div>
+  [v. 32](file://localhost/display/BL/viewpage.action%3fpageId=7019034)                          Dec 15, 2016 16:23        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a):\
+                                                                                                                           added some assumptions
 
-</div>
+  [v. 31](file://localhost/display/BL/viewpage.action%3fpageId=7018980)                          Dec 15, 2016 12:46        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a):\
+                                                                                                                           updated motion detection window wireframe to include thresholds and different types of motion graphs
 
-</div>
+  [v. 30](file://localhost/display/BL/viewpage.action%3fpageId=7018868)                          Dec 15, 2016 10:54        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a):\
+                                                                                                                           Add more titles to requirements
 
-</div>
+  [v. 29](file://localhost/display/BL/viewpage.action%3fpageId=7018777)                          Dec 15, 2016 10:53        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a):\
+                                                                                                                           Add titles to requirements
 
-</div>
+  [v. 28](file://localhost/display/BL/viewpage.action%3fpageId=7018775)                          Dec 15, 2016 10:19        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 27](file://localhost/display/BL/viewpage.action%3fpageId=7018760)                          Dec 15, 2016 10:17        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 26](file://localhost/display/BL/viewpage.action%3fpageId=7018758)                          Dec 15, 2016 10:15        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 25](file://localhost/display/BL/viewpage.action%3fpageId=7018756)                          Dec 15, 2016 10:10        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 24](file://localhost/display/BL/viewpage.action%3fpageId=7018754)                          Dec 14, 2016 17:25        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 23](file://localhost/display/BL/viewpage.action%3fpageId=7018736)                          Dec 14, 2016 11:51        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 22](file://localhost/display/BL/viewpage.action%3fpageId=7018670)                          Dec 14, 2016 11:46        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 21](file://localhost/display/BL/viewpage.action%3fpageId=7018665)                          Dec 14, 2016 11:41        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a):\
+                                                                                                                           added another user story
+
+  [v. 20](file://localhost/display/BL/viewpage.action%3fpageId=7018660)                          Dec 14, 2016 11:37        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 19](file://localhost/display/BL/viewpage.action%3fpageId=7018658)                          Dec 14, 2016 11:36        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 18](file://localhost/display/BL/viewpage.action%3fpageId=7018657)                          Dec 14, 2016 10:11        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 17](file://localhost/display/BL/viewpage.action%3fpageId=7018638)                          Dec 14, 2016 10:10        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 16](file://localhost/display/BL/viewpage.action%3fpageId=7018637)                          Dec 14, 2016 10:07        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 15](file://localhost/display/BL/viewpage.action%3fpageId=7018636)                          Dec 14, 2016 10:01        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 14](file://localhost/display/BL/viewpage.action%3fpageId=7018634)                          Dec 14, 2016 09:58        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 13](file://localhost/display/BL/viewpage.action%3fpageId=7018633)                          Dec 14, 2016 09:57        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 12](file://localhost/display/BL/viewpage.action%3fpageId=7018631)                          Dec 14, 2016 09:57        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 11](file://localhost/display/BL/viewpage.action%3fpageId=7018630)                          Dec 14, 2016 09:53        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 10](file://localhost/display/BL/viewpage.action%3fpageId=7018626)                          Dec 13, 2016 11:29        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 9](file://localhost/display/BL/viewpage.action%3fpageId=7018595)                           Dec 13, 2016 09:55        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 8](file://localhost/display/BL/viewpage.action%3fpageId=7018565)                           Dec 13, 2016 09:47        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 7](file://localhost/display/BL/viewpage.action%3fpageId=7018559)                           Dec 13, 2016 09:46        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 6](file://localhost/display/BL/viewpage.action%3fpageId=7018558)                           Dec 12, 2016 11:44        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 5](file://localhost/display/BL/viewpage.action%3fpageId=7018500)                           Dec 12, 2016 11:43        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 4](file://localhost/display/BL/viewpage.action%3fpageId=7018498)                           Dec 12, 2016 11:25        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 3](file://localhost/display/BL/viewpage.action%3fpageId=7018486)                           Dec 12, 2016 11:24        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 2](file://localhost/display/BL/viewpage.action%3fpageId=7018485)                           Dec 12, 2016 11:24        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+
+  [v. 1](file://localhost/display/BL/viewpage.action%3fpageId=7018483)                           Dec 12, 2016 11:24        [**Lynne Williams**](%20%20%20%20/display/~lwilliams%0d%0a)
+  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
