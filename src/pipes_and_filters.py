@@ -8,7 +8,6 @@ e.g.,
 """
 
 import numpy as np
-import time
 
 
 class Filter():
@@ -34,7 +33,6 @@ class Filter():
       
     def get_data(nrow=10):
         index = 1
-        data = Filter.get_sine(index=index)
         while index <= nrow:
             index += 1
             newobs = Filter.get_sine(index=index)
