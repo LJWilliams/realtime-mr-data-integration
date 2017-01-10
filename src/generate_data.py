@@ -6,6 +6,7 @@ Created on Sun Jan  8 21:38:30 2017
 @author: alw
 """
 import numpy as np
+import time
 
 class Generator():
     def __init__(self, nrow=20, frequency=440, samplingrate=20, duration=1):
@@ -23,8 +24,13 @@ class Generator():
         self.duration = duration*1.0 # must be float
 
     def create_data(self):
-        index = 1
+        index = 0
         while index <= self.nrow:
-            index += 1
+            time.sleep(.5)
             newobs = (np.sin(index*np.pi*np.arange(self.samplingrate*self.duration)*self.frequency/self.samplingrate)).astype(np.float32)
+            if index == self.nrow:
+                newobs = 'EOF'
             yield newobs
+            index += 1
+            
+            
