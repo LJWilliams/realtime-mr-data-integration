@@ -17,7 +17,6 @@ class Filter():
     """Base class that knows how to read and write data streams. Likely to end up as a queue of some sort"""
     def __init__(self, nrow=20, frequency=440, samplingrate=10, duration=1):
         self.datagen = []
-        self.data = []
         self.nrow = nrow
         self.frequency = frequency
         self.samplingrate = samplingrate
@@ -29,15 +28,18 @@ class Filter():
         
         
 class Reader(Filter):
-    """Class that just produces output of Filter"""
+    """Class that produces output of Filter. Returns single record.
+    """
+    
     def __init__(self):
         Filter.__init__(self)
         Filter.collect_data(self)
+        self.record = []
         
-    def run(self, *args):
-        record = args[0]
-        print(record)
-        return record
+    def next_record(self, *args):
+        self.record = args[0]
+        print(self.record)
+        return
      
 class Trim(Filter):
     """For each line of input, Trim produces one line of output trimmed to given number of elements"""
@@ -45,34 +47,36 @@ class Trim(Filter):
         Filter.__init__(self)
         Filter.collect_data(self)
         self.ntrim = ntrim
+        self.trim = []
         
-    def run(self, *args):
+    def next_record(self, *args):
         record = args[0]
         if record == 'EOF':
-            return self.rtrim
-        self.rtrim = record[:self.ntrim]
-        print('\n Trim: \n', self.rtrim)            
+            return
+        self.trim = record[:self.ntrim]
+        print(self.trim)  
 
+        
 class Head(Filter):
-    """Echos the first lines of input unchanged, then stops producing output"""
+    """Echos the first n lines (default = 5) of input unchanged, then stops producing output"""
     def __init__(self, nhead=5):
         Filter.__init__(self)
         Filter.collect_data(self) 
         self.nhead = nhead
-        self.head = []
+
         
-    def run(self, *args):
+    def next_record(self, *args):
         record = args[0]
         index = args[1]
+        if record == 'EOF':
+            return
         if index < self.nhead:
             if index == 0:
                 self.head = record
             else:
                 self.head = np.vstack((self.head, record))
-            print('\n Head: \n', record)    
-        elif record == 'EOF':
-            print('\n Head: \n', self.head)
-            return self.head
+            print(record)    
+        
 
     
 class Sort(Filter):
@@ -81,16 +85,16 @@ class Sort(Filter):
         Filter.__init__(self)
         Filter.collect_data(self)
         
-    def run(self, *args):
+    def next_record(self, *args):
         record = args[0]
         index = args[1]            
         if index == 0:
-            self.data = record
+            self.sort = record
         elif record == 'EOF':
-            print('\n Sort: \n', self.data)
-            return self.data
+            print(self.sort)
+            return
         else:
-            self.data = np.vstack((self.data, record))
+            self.sort = np.vstack((self.sort, record))
 
 
        
@@ -103,30 +107,40 @@ class Pipe(Filter):
                 for filter in self.filter_list:
                 filter.next_record()
         """
-    def __init__(self, ntrim=2, nhead=5):
+    def __init__(self, *args):
         Filter.__init__(self)
         Filter.collect_data(self)
-        self.data = []
         self.record = []
         self.filter_list = []
-        self.ntrim = ntrim
-        self.nhead = nhead
+        self.filter_list = []
+        self.data = []
         
-
-    def get_filter_list(self):
-        self.filter_list = Reader(), Trim(self.ntrim), Head(self.nhead), Sort()
-        return self
+        if len(args) < 1:
+            args = Reader(), Trim(), Head(), Sort()
+        self.filter_list = args
         
     
     def run(self):
-        Pipe.get_filter_list(self)
-        index = 0
-        for record in self.datagen:
-            print('\n ----- Record ', index, ' -----')
+        """RUN runs the filters Reader, Trim, Head, and Sort and 
+        outputs the results of the last input filter
+        
+        ## Parameters
+        
+        ### Input
+        
+        None
+        
+        ## Output
+        
+        data:  the output of the last filter run (default is Sort)  
+        """
+
+        for index, record in enumerate(self.datagen):
+            print('----- Record ', index, ' -----')
             for filter in self.filter_list:
-                self.data = filter.run(record, index)
-            index += 1
-        return self
+                filter.next_record(record, index)
+                print('\n')
+        return
             
             
         
