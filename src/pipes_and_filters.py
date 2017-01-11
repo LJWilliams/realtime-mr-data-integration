@@ -7,26 +7,19 @@ e.g.,
     results = p.run()
 """
 
+
+import time
+
 class Filter():
     """Base class that knows how to read and write data streams. Likely to end up as a queue of some sort"""
     def __init__(self):
         self.datagen = []
+        self.data = []
         self.streaming = True
         self.record = []
         self.index = []
-    
-   # To come soon!
-                
-        
-        
-class Reader(Filter):
-    """Class that produces output of Filter. Returns single record.
-    """
-    def __init__(self, text='haiku.txt'):
-        Filter.__init__(self)
         self.file = []
-        self.record = []
-        self.text = text
+        self.title = 'Filter'
         
         
     def __iter__(self):
@@ -34,15 +27,54 @@ class Reader(Filter):
             for line in self.file:
                 time.sleep(.25)
                 yield line
-         
+                
+    def __eq__(self, other):
+        return self.title == other.title
+                
+    def stop_stream(self, streaming):
+        if streaming == True:
+            streaming = False
+        for filter in self.filter_list:
+            if filter != Sort():
+                data = 'Only data from Sort() saved to output'
+            else:
+                data = self.retrieve_data(filter, streaming)
+        return self, data
+        
+    def retrieve_data(self, filter, streaming):
+        if filter == Sort():
+            data = filter.next_record(streaming)
+            data = list(data)
+            data.pop(0)
+            # save to sql database
+            return self, data
+        else:
+            return
+        
+      # To come soon!
+
+      
+class Reader(Filter):
+    """Class that produces output of Filter. Returns single record.
+    """
+    def __init__(self, text='haiku.txt'):
+        Filter.__init__(self)
+        self.record = []
+        self.text = text
+        self.title = 'Reader'
+        
+    def __eq__(self, other):
+        return self.title == other.title
+        
     def next_record(self, *args):
         self.streaming = args[0]
+        record = []
         if self.streaming == False:
-            self.file.close()
-            return self
+            return self, record
         else:
             self.record = args[1]
-            print(self.record)
+            record = args[1]
+            #print(self.record)
 
   
             
@@ -52,14 +84,21 @@ class Trim(Filter):
         Filter.__init__(self)
         self.ntrim = ntrim
         self.trim = []
+        self.title = 'Trim'
+
+        
+    def __eq__(self, other):
+        return self.title == other.title
+        
         
     def next_record(self, *args):
         self.streaming = args[0]
         if self.streaming == False:
-            return self
+            return self, self.trim
         else:
             record = args[1]
             self.trim = record[:self.ntrim]
+           # print(self.title)
             print(self.trim)  
 
   
@@ -70,21 +109,22 @@ class Head(Filter):
         Filter.__init__(self)
         self.nhead = nhead
         self.head = []
+        self.title = 'Head'
 
+    def __eq__(self, other):
+        return self.title == other.title
         
     def next_record(self, *args):
         self.streaming = args[0]
         if self.streaming == False:
-            return self
+            return self, self.head
         else:
             record = args[1]
             index = args[2]
             type(index)
             if index < self.nhead:
-                if index == 0:
-                    self.head = record
-                else:
-                    self.head = np.vstack((self.head, record))
+                self.head.append(record)
+                #print(self.title)
                 print(record)    
 
                 
@@ -95,12 +135,17 @@ class Sort(Filter):
     def __init__(self):
         Filter.__init__(self)
         self.sort = []
+        self.title = 'Sort'
+
+    def __eq__(self, other):
+        return self.title == other.title
         
     def next_record(self, *args):
-        self.streaming = args[0]
-        if self.streaming == False:
+        streaming = args[0]
+        if streaming == False:
+            #print(self.title)
             print(*self.sort,sep='\n')
-            return self
+            return self, self.sort
         else:
             record = args[1]   
             self.sort.append(record)
@@ -121,8 +166,10 @@ class Pipe(Filter):
         if len(args) <= 1:
             args = Reader(), Trim(), Head(), Sort()
         self.filter_list = args
+        self.title = 'Pipe'
 
-
+    def __eq__(self, other):
+        return self.title == other.title
         
     
     def run(self):
@@ -137,10 +184,8 @@ class Pipe(Filter):
                 for filter in self.filter_list:
                     filter.next_record(streaming, record, index)
             streaming = False
-            self.streaming == False
         else:
-            for filter in self.filter_list:
-                filter.next_record(streaming, record, index)
+            self.stop_stream(streaming)
         return self
             
             
