@@ -7,43 +7,54 @@ e.g.,
     results = p.run()
 """
 
-import generate_data as gd
 import numpy as np
+import time
+
 np.set_printoptions(threshold=np.inf)
 
 
 
 class Filter():
     """Base class that knows how to read and write data streams. Likely to end up as a queue of some sort"""
-    def __init__(self, nrow=20, frequency=440, samplingrate=10, duration=1):
+    def __init__(self, text='haiku.txt'):
         self.datagen = []
-        self.nrow = nrow
-        self.frequency = frequency
-        self.samplingrate = samplingrate
-        self.duration = duration
+        self.streaming = False
+        self.record = []
     
     def collect_data(self):
-        data = gd.Generator(nrow=self.nrow, frequency=self.frequency, samplingrate=self.samplingrate, duration=self.duration)
-        self.datagen = data.create_data()
+        self.streaming = True
+        self.datagen = self.create_data()
+        
+        
+    def create_data(self):
+        with open(self.text) as file:
+            for line in file:
+                time.sleep(.25)
+                yield line    
+        file.close()
+                
         
         
 class Reader(Filter):
     """Class that produces output of Filter. Returns single record.
     """
-    
-    def __init__(self):
+    def __init__(self, text='haiku.txt'):
+        self.text = text
+        self.record = []
         Filter.__init__(self)
         Filter.collect_data(self)
-        self.record = []
+        
+        
         
     def next_record(self, *args):
         self.record = args[0]
         print(self.record)
-        return
-     
+        return self.record
+
+        
 class Trim(Filter):
     """For each line of input, Trim produces one line of output trimmed to given number of elements"""
-    def __init__(self, ntrim=2):
+    def __init__(self, ntrim=5):
         Filter.__init__(self)
         Filter.collect_data(self)
         self.ntrim = ntrim
@@ -99,25 +110,23 @@ class Sort(Filter):
 
        
     
-class Pipe(Filter):
-    """Given a bunch of objects, Pipe puts them in a list and starts running them
-    e.g., 
-        def run(self):
-            while (there's still data to process):
-                for filter in self.filter_list:
-                filter.next_record()
-        """
+class Pipe(Reader, Trim, Head, Sort):
+    """Given a bunch of objects, Pipe puts them in a list and starts running them"""
     def __init__(self, *args):
-        Filter.__init__(self)
-        Filter.collect_data(self)
+        Reader.__init__(self)
+        Trim.__init__(self)
+        Head.__init__(self)
+        Sort.__init__(self)
         self.record = []
-        self.filter_list = []
         self.filter_list = []
         self.data = []
         
         if len(args) < 1:
             args = Reader(), Trim(), Head(), Sort()
         self.filter_list = args
+
+
+
         
     
     def run(self):
@@ -134,13 +143,12 @@ class Pipe(Filter):
         
         data:  the output of the last filter run (default is Sort)  
         """
-
-        for index, record in enumerate(self.datagen):
-            print('----- Record ', index, ' -----')
-            for filter in self.filter_list:
-                filter.next_record(record, index)
-                print('\n')
-        return
+        while self.streaming == True:
+            for index, record in enumerate(self.datagen):
+                for filter in self.filter_list:
+                    filter.next_record(record, index)
+            self.streaming = False
+            return
             
             
         
