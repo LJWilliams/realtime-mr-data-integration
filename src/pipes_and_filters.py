@@ -31,9 +31,7 @@ class Filter():
     def __eq__(self, other):
         return self.title == other.title
                 
-    def stop_stream(self, streaming):
-        if streaming == True:
-            streaming = False
+    def stop_stream(self, streaming=False):
         for filter in self.filter_list:
             if filter != Sort():
                 data = 'Only data from Sort() saved to output'
@@ -68,12 +66,10 @@ class Reader(Filter):
         
     def next_record(self, *args):
         self.streaming = args[0]
-        record = []
         if self.streaming == False:
-            return self, record
+            return self, self.record
         else:
             self.record = args[1]
-            record = args[1]
             #print(self.record)
 
   
