@@ -1,3 +1,0 @@
-This is a test document.
-Not as fancy as haiku.txt
-but serves the purpose.
