@@ -25,26 +25,25 @@ class Filter():
     def __iter__(self):
         with open(self.text) as self.file:
             for line in self.file:
-                time.sleep(.25)
+                time.sleep(.025)
                 yield line
                 
     def __eq__(self, other):
         return self.title == other.title
                 
-    def stop_stream(self, streaming=False):
+    def stop_stream(self, streaming=False, d=[]):
         for filter in self.filter_list:
-            if filter != Sort():
-                data = 'Only data from Sort() saved to output'
-            else:
-                data = self.retrieve_data(filter, streaming)
-        return self, data
+            if filter == Sort():
+                result = self.retrieve_data(filter, streaming)
+                d.append(result)
+        return self, d
+                
         
     def retrieve_data(self, filter, streaming):
-        if filter == Sort():
+        if filter == Sort(): #or filter == Head():
             data = filter.next_record(streaming)
             data = list(data)
             data.pop(0)
-            # save to sql database
             return self, data
         else:
             return
@@ -61,16 +60,18 @@ class Reader(Filter):
         self.text = text
         self.title = 'Reader'
         
+        
     def __eq__(self, other):
         return self.title == other.title
         
     def next_record(self, *args):
         self.streaming = args[0]
-        if self.streaming == False:
-            return self, self.record
-        else:
-            self.record = args[1]
-            #print(self.record)
+        self.filter_list = args[3]
+        for index, record in enumerate(self.filter_list[0]):
+            print('Record', index)
+            yield record, index, self.streaming
+        self.streaming = False
+            #return self, self.record
 
   
             
@@ -94,8 +95,9 @@ class Trim(Filter):
         else:
             record = args[1]
             self.trim = record[:self.ntrim]
-           # print(self.title)
-            print(self.trim)  
+            #print(self.trim)
+            return self, self.trim
+            
 
   
             
@@ -120,8 +122,8 @@ class Head(Filter):
             type(index)
             if index < self.nhead:
                 self.head.append(record)
-                #print(self.title)
-                print(record)    
+                #print(record)
+                return self, record
 
                 
                 
@@ -139,8 +141,6 @@ class Sort(Filter):
     def next_record(self, *args):
         streaming = args[0]
         if streaming == False:
-            #print(self.title)
-            print(*self.sort,sep='\n')
             return self, self.sort
         else:
             record = args[1]   
@@ -175,14 +175,24 @@ class Pipe(Filter):
         data:  the output of the last filter run (default is Sort)  
         """
         streaming = self.streaming
+        data = []
+        print(self.filter_list)
         while streaming == True:
-            for index, record in enumerate(self.filter_list[0]):
-                for filter in self.filter_list:
-                    filter.next_record(streaming, record, index)
-            streaming = False
+            #for index, record in enumerate(self.filter_list[0]): 
+             #   d = []
+             for filter in self.filter_list:
+                 if filter == Reader():
+                     record, index, streaming = filter.next_record(streaming)
+                #for filter in self.filter_list:
+                #    result = filter.next_record(streaming, record, index)
+                #    d.append(result)
+                #    data.append(d)
         else:
-            self.stop_stream(streaming)
-        return self
+#            d = self.stop_stream(streaming, d)
+#            data.append(d)
+            print('All done.')
+        return self, data
+        
             
             
         
