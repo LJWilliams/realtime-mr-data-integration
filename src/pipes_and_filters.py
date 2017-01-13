@@ -10,36 +10,61 @@ e.g.,
 
 import time
 
+
 class Filter():
-    """Base class that knows how to read and write data streams. Likely to end up as a queue of some sort"""
+    """Base class that knows how to read and write data streams.
+    Likely to end up as a queue of some sort.
+    """
+
     def __init__(self):
-        self.datagen = []
-        self.data = []
-        self.streaming = True
-        self.record = []
-        self.index = []
-        self.file = []
-        self.title = 'Filter'
+        """Construct common elements of all filters."""
+
+        self.datagen = [] # FIXME: what is this for?
+        self.data = [] # FIXME: what is this for, and does every filter need it?
+        self.streaming = True # FIXME: what does this do?
+        self.record = [] # FIXME: what does this do, and why is it initialized to a list?
+        self.index = [] # FIXME: what is this, and why is it initialized to a list?
+        self.file = [] # FIXME: do all filters have a file?
+        self.title = 'Filter' # This one, I can guess... :-)
         
         
     def __iter__(self):
+        # FIXME: doesn't belong in the base class.  Only the classes
+        # that interact with files ought to have this.  (The clue is that
+        # the constructor doesn't set `self.text`.)  It's OK for derived
+        # classes to add more data members that parent classes don't have.
+        # It's less common for derived classes to add methods that their
+        # parents don't have - if you expect to do this, it's common to
+        # raise `NotImplementedError` in the parent class method.
         with open(self.text) as self.file:
             for line in self.file:
                 time.sleep(.25)
                 yield line
+
                 
     def __eq__(self, other):
+        # FIXME: when do you actually rely on this?
         return self.title == other.title
+
                 
     def stop_stream(self, streaming=False):
+        # Why does `Filter` have a list of other filters?  That belongs in
+        # `Pipe`.  Also, any time a parent class refers to a specific child
+        # class (as you're doing here with the comparison with `Sort`) it's
+        # a sign that something has gone wrong in the class design.  Again,
+        # you could have a `stop_stream` here that raises `NotImplementedError`,
+        # and then override it in child classes that actually do something
+        # interesting.
         for filter in self.filter_list:
             if filter != Sort():
                 data = 'Only data from Sort() saved to output'
             else:
                 data = self.retrieve_data(filter, streaming)
         return self, data
+
         
     def retrieve_data(self, filter, streaming):
+        # See comment on `stop_stream` above.
         if filter == Sort():
             data = filter.next_record(streaming)
             data = list(data)
@@ -55,23 +80,29 @@ class Filter():
 class Reader(Filter):
     """Class that produces output of Filter. Returns single record.
     """
+
     def __init__(self, text='haiku.txt'):
         Filter.__init__(self)
-        self.record = []
-        self.text = text
-        self.title = 'Reader'
+        self.record = [] # FIXME: redundant - this is done in the parent class.
+        self.text = text # FIXME: only needs to be done here - parent class shouldn't have
+                         # a `self.text` at all.
+        self.title = 'Reader' # Good - override the default setting in the parent.
+
         
     def __eq__(self, other):
         return self.title == other.title
+
         
     def next_record(self, *args):
         self.streaming = args[0]
-        if self.streaming == False:
-            return self, self.record
+        if self.streaming == False: # FIXME: "if not self.streaming"
+            return self, self.record # FIXME: why return self?  In fact, why return anything?
+                                     # Looking at `Pipe.run`, the return value of `next_record`
+                                     # is never used...?
         else:
-            self.record = args[1]
+            self.record = args[1]    # FIXME: so sometimes this produces two values,
+                                     # and sometimes it produces `None` because of fall-through?
             #print(self.record)
-
   
             
 class Trim(Filter):
@@ -183,13 +214,3 @@ class Pipe(Filter):
         else:
             self.stop_stream(streaming)
         return self
-            
-            
-        
-        
-        
-    
-        
-        
-        
-
