@@ -16,22 +16,8 @@ class Filter():
     def __init__(self):
         """Construct common elements of all filters."""
         self.title = 'Filter' # This one, I can guess... :-)
-        
-        # FIXME: doesn't belong in the base class.  Only the classes
-        # that interact with files ought to have this.  (The clue is that
-        # the constructor doesn't set `self.text`.)  It's OK for derived
-        # classes to add more data members that parent classes don't have.
-        # It's less common for derived classes to add methods that their
-        # parents don't have - if you expect to do this, it's common to
-        # raise `NotImplementedError` in the parent class method.
-    
-    def __eq__(self, other):
-        # FIXME: when do you actually rely on this?
-        return self.title == other.title
 
-                
-    
-        
+      
       # To come soon!
 
       
@@ -52,8 +38,8 @@ class Reader(Filter):
         
           
     def next_record(self, record): # record defined here to keep same formatting for all next_record calls for all the filters. Is there a better way to do this?
-        for line in self.file:
-            return line
+        for record in self.file:
+            return record
         
 
 class Trim(Filter):
@@ -67,6 +53,8 @@ class Trim(Filter):
         return self.title == other.title
           
     def next_record(self, record):
+        if record == None:
+            return
         trim = record[:self.ntrim]
         return trim
   
@@ -81,17 +69,16 @@ class Head(Filter):
 
     def __eq__(self, other):
         return self.title == other.title
-        
+
     def __iter__(self):
         return self
         
     def next_record(self, record):
-        self.index += 1
-        if self.index <= self.nhead:
+        if self.index <= self.nhead and record != None:
+            self.index +=1
             return record 
         else:
-            record = None
-            return record
+            return
                 
                 
     
@@ -110,7 +97,7 @@ class Sort(Filter):
             return self.sort
         else:
             self.sort.append(record)
-            return None
+            return
         
     
 class Pipe(Filter):
@@ -118,13 +105,10 @@ class Pipe(Filter):
     def __init__(self, *args):
         self.title = 'Pipe'
         self.filter_list = args
+        self.results = []
         
-
     def __eq__(self, other):
         return self.title == other.title
-        
-    def __iter__(self):
-        return self
     
     def run(self):
         """RUN runs the filters Reader, Trim, Head, and Sort and 
@@ -134,26 +118,21 @@ class Pipe(Filter):
         """
         self.record = []
         record = []
-        results = []
         streaming = True
         while streaming:
+            filter_output = []
             for filter in self.filter_list:
-                filter_output = []
                 record = filter.next_record(self.record)
-                print(record)
-                if filter == Reader(): # Is there a nicer way of running these if statements? It seems a little clunky to me, but I can't seem to see what the problem with it is
+                filter_output.append(record)
+                if filter == Reader():
+                    self.record = record
                     if record == None:
                         streaming = False
-                        sort = self.filter_list.index(Sort())
-                        record = self.filter_list[sort].next_record(record)
-                        results = filter_output.append(record)
-                        print(*record, '\n')
-                        return results
-                        break
-                    else:
-                        self.record = record
-                results =  filter_output.append(record)
-                print(results)
+                        
+            self.results.append(filter_output)
+        return self.results
+
+
         
 
                       
