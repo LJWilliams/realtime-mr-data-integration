@@ -105,19 +105,18 @@ class Pipe(Filter):
     def __init__(self, *args):
         self.title = 'Pipe'
         self.filter_list = args
-        self.results = []
         
     def __eq__(self, other):
         return self.title == other.title
     
     def run(self):
         """RUN runs the filters Reader, Trim, Head, and Sort and 
-        outputs the results of the last input filter
-        
-        data:  the output of the last filter run (default is Sort)  
+        outputs the results to a list of lists. The outer list
+        contains lists of the output from each record for all of the
+        filters included when initializing Pipe.
         """
         self.record = []
-        record = []
+        self.results = []
         streaming = True
         while streaming:
             filter_output = []
