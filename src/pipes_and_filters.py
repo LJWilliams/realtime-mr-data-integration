@@ -1,140 +1,162 @@
  # -*- coding: utf-8 -*-
 """
-Pipes, Filters & Classes
+Pipes and filters using Python classes.
 
 e.g., 
+
     p = Pipe(Reader('mydata.txt'), Trim(20), Head(10), Sort())
     results = p.run()
+
+will read 'mydata.txt', trim to 20 columns, take the first 10 lines, sort,
+and print that as output.
 """
 
 
 class Filter():
-    """Base class that knows how to read and write data streams.
-    Likely to end up as a queue of some sort.
+    """Base class of all filters, intended for use in Pipe.
     """
 
-    def __init__(self):
+    def __init__(self, title='Filter'):
         """Construct common elements of all filters."""
-        self.title = 'Filter' # This one, I can guess... :-)
+
+        self.title = title # Makes override by child classes cleaner.
 
       
-      # To come soon!
 
-      
 class Reader(Filter):
-    """Class that produces output of Filter. Returns single record.
+    """Produce lines of text from a file one by one.
     """
 
-    def __init__(self, filename='haiku.txt'):
-        Filter.__init__(self) 
-        self.title = 'Reader' # Good - override the default setting in the parent.
-        self.file = open(filename)
+    def __init__(self, filename):
+        Filter.__init__(self, 'Reader') # FIXME: have a look at how new-style classes are initialized in Python 3
+        self.file = open(filename) # FIXME: who closes the file and when?
         
-    def __iter__(self):
+
+    def __iter__(self): # FIXME: when do you use the Reader directly in a loop?
         return self
     
+
     def __eq__(self, other):
+        # FIXME: why do you need equality testing on filters?
+        # If it's to compare filters against Reader, that's a sign of leaky design.
         return self.title == other.title
-        
           
-    def next_record(self, record): # record defined here to keep same formatting for all next_record calls for all the filters. Is there a better way to do this?
-        for record in self.file:
+
+    def next_record(self, record):
+        for record in self.file: # FIXME: not clear what this is doing.
             return record
+
         
 
 class Trim(Filter):
-    """For each line of input, Trim produces one line of output trimmed to given number of elements"""
+    """Trim input records to 'ntrim' columns or less."""
+
     def __init__(self, ntrim=5):
-        Filter.__init__(self)
+        Filter.__init__(self, 'Trim')
         self.ntrim = ntrim
-        self.title = 'Trim'
+
  
-    def __eq__(self, other):
+    def __eq__(self, other): # remove?
         return self.title == other.title
+
           
     def next_record(self, record):
         if record == None:
-            return
-        trim = record[:self.ntrim]
-        return trim
+            return None # FIXME: explicit return value (since the other return is explicit)
+        return record[:self.ntrim] # FIXME: no need for intermediate variable
+
   
             
 class Head(Filter):
-    """Echos the first n lines (default = 5) of input unchanged, then stops producing output"""
+    """Echo the first N lines of input.
+    """
+
     def __init__(self, nhead=5):
-        Filter.__init__(self)
+        Filter.__init__(self, 'Head')
         self.nhead = nhead
-        self.title = 'Head'
         self.index = 0
 
-    def __eq__(self, other):
+
+    def __eq__(self, other): # FIXME: remove?
         return self.title == other.title
 
-    def __iter__(self):
+
+    def __iter__(self): # used where?
         return self
         
+
     def next_record(self, record):
+        # How about:
+        # if record == None:
+        #    return None
+        # elif index > self.nhead:
+        #    return None
+        # else:
+        #    self.index += 1
+        #    return record
+        # or something similar?
         if self.index <= self.nhead and record != None:
             self.index +=1
             return record 
         else:
             return
-                
+
                 
     
 class Sort(Filter):
-    """Waits until it has read all of the input, then starts producing output"""
-    def __init__(self):
-        Filter.__init__(self)
-        self.sort = []
-        self.title = 'Sort'
+    """Sort all input records alphabetically.
+    """
 
-    def __eq__(self, other):
+    def __init__(self):
+        Filter.__init__(self, 'Sort')
+        self.sort = []
+
+
+    def __eq__(self, other): # FIXME: for what?
         return self.title == other.title
         
+
     def next_record(self, record):
         if record == None:
-            return self.sort
+            return self.sort # FIXME: but when does the actual sorting take place?
+            # FIXME: also, this returns a list where the others return a single record
         else:
             self.sort.append(record)
-            return
+            return # 'return None' (all explicit or none explicit)
+
         
     
 class Pipe(Filter):
-    """Given a bunch of objects, Pipe puts them in a list and starts running them"""
+    """Given a bunch of filters, run them in order.
+    """
+
     def __init__(self, *args):
         self.title = 'Pipe'
-        self.filter_list = args
+        self.filters = args # 'filters' instead of 'filter_list' in case you change your mind about implementation
         
-    def __eq__(self, other):
+
+    def __eq__(self, other): # FIXME: why?
         return self.title == other.title
     
+
     def run(self):
-        """RUN runs the filters Reader, Trim, Head, and Sort and 
-        outputs the results to a list of lists. The outer list
-        contains lists of the output from each record for all of the
-        filters included when initializing Pipe.
+        """Run the given filters in order, passing the output of each to the next.
         """
+
+        # FIXME: we'll discuss this one...
+
         self.record = []
         self.results = []
         streaming = True
         while streaming:
             filter_output = []
-            for filter in self.filter_list:
+            for filter in self.filters:
                 record = filter.next_record(self.record)
                 filter_output.append(record)
-                if filter == Reader():
+                if filter == Reader(): # FIXME: no no no no no....
                     self.record = record
                     if record == None:
                         streaming = False
                         
             self.results.append(filter_output)
         return self.results
-
-
-        
-
-                      
-            
-                
-                
