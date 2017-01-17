@@ -69,7 +69,10 @@ class Trim(Filter):
                 return status, record
         elif status == 'Closed':
             if record != None:
-                return status, ' | '.join(self.trim)
+                if len(self.trim) == 0:
+                    return status, ' | '.join(item[:self.ntrim] for item in record.split(' | '))
+                else:
+                    return status, ' | '.join(self.trim)
             elif record == None:
                 return status, None  
 
