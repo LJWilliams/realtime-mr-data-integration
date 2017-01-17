@@ -9,7 +9,7 @@ e.g.,
 
 will read 'mydata.txt', trim to 20 columns, take the first 10 lines, sort,
 and print that as output.
-Input is a txt file (strings) and returns a string.
+Input is a txt file (strings) and returns a string delimited by |.
 """
 
 
@@ -69,7 +69,7 @@ class Trim(Filter):
                 return status, record
         elif status == 'Closed':
             if record != None:
-                return status, '\t'.join(self.trim)
+                return status, ' | '.join(self.trim)
             elif record == None:
                 return status, None  
 
@@ -81,17 +81,22 @@ class Head(Filter):
     def __init__(self, nhead=5):
         super().__init__('Head')
         self.nhead = nhead
+        self.head = []
         
-
+        
     def next_record(self, status, record):
         if status == 'Open':
             if record == None:
                 return status, None
             elif record != None:
-                return status, record[:self.nhead]
+                self.head.append(record)
+                return status, None
         elif status == 'Closed':
             if record != None:
-                return status, '\t'.join(record.split('\t')[:self.nhead])
+                if len(self.head) == 0:
+                    return status, ' | '.join(record.split(' | ')[:self.nhead])
+                else:
+                    return status, ' | '.join(self.head[:self.nhead])
             elif record == None:
                 return status, None
 
@@ -101,21 +106,24 @@ class Sort(Filter):
     """
 
     def __init__(self):
-        super().__init__('Sort')        
+        super().__init__('Sort')  
+        self.sort = []
 
     def next_record(self, status, record):
         if status == 'Open':
             if record == None:
                 return status, None
             elif record != None:
-                record = sorted(list(record))
-                return status, record
+                self.sort.append(record)
+                return status, None
         elif status == 'Closed':
             if record == None:
                 return status, None
             elif record != None:
-                return status, '\t'.join(sorted(record.split('\t')))       
-
+                if len(self.sort) == 0:
+                    return status, ' | '.join(sorted(record.split(' | ')))       
+                else:
+                    return status, ' | '.join(sorted(self.sort))
 
 class Pipe():
     """Given a bunch of filters, run them in order.
