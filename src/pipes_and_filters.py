@@ -9,6 +9,7 @@ e.g.,
 
 will read 'mydata.txt', trim to 20 columns, take the first 10 lines, sort,
 and print that as output.
+Input is a txt file (strings) and returns a string.
 """
 
 
@@ -18,47 +19,38 @@ class Filter():
 
     def __init__(self, title='Filter'):
         """Construct common elements of all filters."""
-        self.title = title # Makes override by child classes cleaner.
+        self.title = title 
 
     def finish(self): 
-        print('Closing', self.title)
         return None
-    # some of the child classes can on each of filter objects in turn
-    # do nothing hook 
+     
     
 class Reader(Filter):
     """Produce lines of text from a file one by one.
     """
 
     def __init__(self, filename):
-        #super 
-        #Filter.__init__(self, 'Reader') # FIXME: have a look at how new-style classes are initialized in Python 3 super function
         super().__init__('Reader')
         self.file = open(filename)
       
     def finish(self):
-        status = 'Closed'
-        record = None
         self.file.close()
-        print('Closing', self.title, '...')
-        return status, record, self.file
+        return self
         
-    # Reader behaves as sort does nothing until receives end of input   signal
     def next_record(self, status, record):
         status = 'Open'
         if not self.file.closed: 
             try:
                 record = self.file.readlines(1)[0]
             except IndexError:
-                return 'Closed', None
+                self = Reader.finish(self)
+                return 'Closed', str(record)
             return status, record
         else:
             if record == None:
                 status = 'Closed'
                 return status, record
 
-    # close file override 
-    # create method that does finish that  overrides finish in Filter
 
 class Trim(Filter):
     """Trim input records to 'ntrim' columns or less."""
@@ -76,15 +68,12 @@ class Trim(Filter):
             elif record == None:
                 return status, record
         elif status == 'Closed':
-            if record == None:
-                return status, '\n'.join(self.trim)
-            elif record != None:
-                return status, None
-                
-           # return 'Closed', None
+            if record != None:
+                return status, '\t'.join(self.trim)
+            elif record == None:
+                return status, None  
 
-  
-            
+                
 class Head(Filter):
     """Echo the first N lines of input.
     """
@@ -92,73 +81,58 @@ class Head(Filter):
     def __init__(self, nhead=5):
         super().__init__('Head')
         self.nhead = nhead
-        self.head = []
-        self.index = 0
         
 
     def next_record(self, status, record):
-        if status == 'Closed' and record !=None:
-                return status, record.split('\n')[:self.nhead]
-       
+        if status == 'Open':
+            if record == None:
+                return status, None
+            elif record != None:
+                return status, record[:self.nhead]
+        elif status == 'Closed':
+            if record != None:
+                return status, '\t'.join(record.split('\t')[:self.nhead])
+            elif record == None:
+                return status, None
 
-           
-
-# Behaviour of next_record method to reflect passing things off to next filter
                 
-    
 class Sort(Filter):
     """Sort all input records alphabetically.
     """
 
     def __init__(self):
-        Filter.__init__(self, 'Sort')
-        self.sort = []
+        super().__init__('Sort')        
+
+    def next_record(self, status, record):
+        if status == 'Open':
+            if record == None:
+                return status, None
+            elif record != None:
+                record = sorted(list(record))
+                return status, record
+        elif status == 'Closed':
+            if record == None:
+                return status, None
+            elif record != None:
+                return status, '\t'.join(sorted(record.split('\t')))       
 
 
-    def __eq__(self, other): # FIXME: for what?
-        return self.title == other.title
-        
-
-    def next_record(self, record):
-        if record == None:
-            return self.sort # FIXME: but when does the actual sorting take place?
-            # FIXME: also, this returns a list where the others return a single record
-        else:
-            self.sort.append(record)
-            return # 'return None' (all explicit or none explicit)
-
-        
-    
 class Pipe():
     """Given a bunch of filters, run them in order.
     """
 
     def __init__(self, *args):
-        self.filters = args # 'filters' instead of 'filter_list' in case you change your mind about implementation
-        
-
-#    def __eq__(self, other): # FIXME: why?
-#        return self.title == other.title
+        self.filters = args 
     
 
     def run(self):
         """Run the given filters in order, passing the output of each to the next.
         """
 
-        # FIXME: we'll discuss this one...
-
         record = None
         status = None
-        streaming = True
-        while streaming:
+        while True:
             for filter in self.filters:
                 status, record = filter.next_record(status, record)
-                print(filter.title, status, record)
-            if status == 'Closed' and record == None:
-                streaming = False
-        return record
-
-        # output return_record needs to return pair, status and string magid values?
-        # reengineer return_record
-        # get end of data signal
-        # cases Trim produces string
+            if status == 'Closed':
+                return record # This only returns the last record if Head or Sort act on the output of Reader. Would it ever be necessary to return the output of each record as a push? I can see pulling through the pipeline if a structural scan is written to disk, but it would be good to have the option for data types I haven't considered yet. However, if I move the return statement to get the individual records, Pipe acts like an iterator, pausing to wait for the next call to Pipe.run(). Any suggestions? 
