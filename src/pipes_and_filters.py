@@ -18,52 +18,70 @@ class Filter():
 
     def __init__(self, title='Filter'):
         """Construct common elements of all filters."""
-
         self.title = title # Makes override by child classes cleaner.
 
-      
-
+    def finish(self): 
+        print('Closing', self.title)
+        return None
+    # some of the child classes can on each of filter objects in turn
+    # do nothing hook 
+    
 class Reader(Filter):
     """Produce lines of text from a file one by one.
     """
 
     def __init__(self, filename):
-        Filter.__init__(self, 'Reader') # FIXME: have a look at how new-style classes are initialized in Python 3
-        self.file = open(filename) # FIXME: who closes the file and when?
+        #super 
+        #Filter.__init__(self, 'Reader') # FIXME: have a look at how new-style classes are initialized in Python 3 super function
+        super().__init__('Reader')
+        self.file = open(filename)
+      
+    def finish(self):
+        status = 'Closed'
+        record = None
+        self.file.close()
+        print('Closing', self.title, '...')
+        return status, record, self.file
         
+    # Reader behaves as sort does nothing until receives end of input   signal
+    def next_record(self, status, record):
+        status = 'Open'
+        if not self.file.closed: 
+            try:
+                record = self.file.readlines(1)[0]
+            except IndexError:
+                return 'Closed', None
+            return status, record
+        else:
+            if record == None:
+                status = 'Closed'
+                return status, record
 
-    def __iter__(self): # FIXME: when do you use the Reader directly in a loop?
-        return self
-    
-
-    def __eq__(self, other):
-        # FIXME: why do you need equality testing on filters?
-        # If it's to compare filters against Reader, that's a sign of leaky design.
-        return self.title == other.title
-          
-
-    def next_record(self, record):
-        for record in self.file: # FIXME: not clear what this is doing.
-            return record
-
-        
+    # close file override 
+    # create method that does finish that  overrides finish in Filter
 
 class Trim(Filter):
     """Trim input records to 'ntrim' columns or less."""
 
     def __init__(self, ntrim=5):
-        Filter.__init__(self, 'Trim')
+        super().__init__('Trim')
         self.ntrim = ntrim
-
- 
-    def __eq__(self, other): # remove?
-        return self.title == other.title
-
+        self.trim = []
           
-    def next_record(self, record):
-        if record == None:
-            return None # FIXME: explicit return value (since the other return is explicit)
-        return record[:self.ntrim] # FIXME: no need for intermediate variable
+    def next_record(self, status, record):
+        if status == 'Open':
+            if record != None:
+                self.trim.append(record[:self.ntrim])
+                return status, None
+            elif record == None:
+                return status, record
+        elif status == 'Closed':
+            if record == None:
+                return status, '\n'.join(self.trim)
+            elif record != None:
+                return status, None
+                
+           # return 'Closed', None
 
   
             
@@ -72,35 +90,20 @@ class Head(Filter):
     """
 
     def __init__(self, nhead=5):
-        Filter.__init__(self, 'Head')
+        super().__init__('Head')
         self.nhead = nhead
+        self.head = []
         self.index = 0
-
-
-    def __eq__(self, other): # FIXME: remove?
-        return self.title == other.title
-
-
-    def __iter__(self): # used where?
-        return self
         
 
-    def next_record(self, record):
-        # How about:
-        # if record == None:
-        #    return None
-        # elif index > self.nhead:
-        #    return None
-        # else:
-        #    self.index += 1
-        #    return record
-        # or something similar?
-        if self.index <= self.nhead and record != None:
-            self.index +=1
-            return record 
-        else:
-            return
+    def next_record(self, status, record):
+        if status == 'Closed' and record !=None:
+                return status, record.split('\n')[:self.nhead]
+       
 
+           
+
+# Behaviour of next_record method to reflect passing things off to next filter
                 
     
 class Sort(Filter):
@@ -126,17 +129,16 @@ class Sort(Filter):
 
         
     
-class Pipe(Filter):
+class Pipe():
     """Given a bunch of filters, run them in order.
     """
 
     def __init__(self, *args):
-        self.title = 'Pipe'
         self.filters = args # 'filters' instead of 'filter_list' in case you change your mind about implementation
         
 
-    def __eq__(self, other): # FIXME: why?
-        return self.title == other.title
+#    def __eq__(self, other): # FIXME: why?
+#        return self.title == other.title
     
 
     def run(self):
@@ -145,18 +147,18 @@ class Pipe(Filter):
 
         # FIXME: we'll discuss this one...
 
-        self.record = []
-        self.results = []
+        record = None
+        status = None
         streaming = True
         while streaming:
-            filter_output = []
             for filter in self.filters:
-                record = filter.next_record(self.record)
-                filter_output.append(record)
-                if filter == Reader(): # FIXME: no no no no no....
-                    self.record = record
-                    if record == None:
-                        streaming = False
-                        
-            self.results.append(filter_output)
-        return self.results
+                status, record = filter.next_record(status, record)
+                print(filter.title, status, record)
+            if status == 'Closed' and record == None:
+                streaming = False
+        return record
+
+        # output return_record needs to return pair, status and string magid values?
+        # reengineer return_record
+        # get end of data signal
+        # cases Trim produces string
