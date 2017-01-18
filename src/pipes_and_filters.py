@@ -9,6 +9,7 @@ e.g.,
 
 will read 'mydata.txt', trim to 20 columns, take the first 10 lines, sort,
 and print that as output.
+Input is a txt file (strings) and returns a string delimited by |.
 """
 
 
@@ -18,145 +19,131 @@ class Filter():
 
     def __init__(self, title='Filter'):
         """Construct common elements of all filters."""
+        self.title = title 
 
-        self.title = title # Makes override by child classes cleaner.
-
-      
-
+    def finish(self): 
+        return None
+     
+    
 class Reader(Filter):
     """Produce lines of text from a file one by one.
     """
 
     def __init__(self, filename):
-        Filter.__init__(self, 'Reader') # FIXME: have a look at how new-style classes are initialized in Python 3
-        self.file = open(filename) # FIXME: who closes the file and when?
-        
-
-    def __iter__(self): # FIXME: when do you use the Reader directly in a loop?
+        super().__init__('Reader')
+        self.file = open(filename)
+      
+    def finish(self):
+        self.file.close()
         return self
-    
-
-    def __eq__(self, other):
-        # FIXME: why do you need equality testing on filters?
-        # If it's to compare filters against Reader, that's a sign of leaky design.
-        return self.title == other.title
-          
-
-    def next_record(self, record):
-        for record in self.file: # FIXME: not clear what this is doing.
-            return record
-
         
+    def next_record(self, status, record):
+        status = 'Open'
+        if not self.file.closed: 
+            try:
+                record = self.file.readlines(1)[0]
+            except IndexError:
+                self = Reader.finish(self)
+                return 'Closed', str(record)
+            return status, record
+        else:
+            if record == None:
+                status = 'Closed'
+                return status, record
+
 
 class Trim(Filter):
     """Trim input records to 'ntrim' columns or less."""
 
     def __init__(self, ntrim=5):
-        Filter.__init__(self, 'Trim')
+        super().__init__('Trim')
         self.ntrim = ntrim
-
- 
-    def __eq__(self, other): # remove?
-        return self.title == other.title
-
+        self.trim = []
           
-    def next_record(self, record):
-        if record == None:
-            return None # FIXME: explicit return value (since the other return is explicit)
-        return record[:self.ntrim] # FIXME: no need for intermediate variable
+    def next_record(self, status, record):
+        if status == 'Open':
+            if record != None:
+                self.trim.append(record[:self.ntrim])
+                return status, None
+            elif record == None:
+                return status, record
+        elif status == 'Closed':
+            if record != None:
+                if len(self.trim) == 0:
+                    return status, ' | '.join(item[:self.ntrim] for item in record.split(' | '))
+                else:
+                    return status, ' | '.join(self.trim)
+            elif record == None:
+                return status, None  
 
-  
-            
+                
 class Head(Filter):
     """Echo the first N lines of input.
     """
 
     def __init__(self, nhead=5):
-        Filter.__init__(self, 'Head')
+        super().__init__('Head')
         self.nhead = nhead
-        self.index = 0
-
-
-    def __eq__(self, other): # FIXME: remove?
-        return self.title == other.title
-
-
-    def __iter__(self): # used where?
-        return self
+        self.head = []
         
-
-    def next_record(self, record):
-        # How about:
-        # if record == None:
-        #    return None
-        # elif index > self.nhead:
-        #    return None
-        # else:
-        #    self.index += 1
-        #    return record
-        # or something similar?
-        if self.index <= self.nhead and record != None:
-            self.index +=1
-            return record 
-        else:
-            return
+        
+    def next_record(self, status, record):
+        if status == 'Open':
+            if record == None:
+                return status, None
+            elif record != None:
+                self.head.append(record)
+                return status, None
+        elif status == 'Closed':
+            if record != None:
+                if len(self.head) == 0:
+                    return status, ' | '.join(record.split(' | ')[:self.nhead])
+                else:
+                    return status, ' | '.join(self.head[:self.nhead])
+            elif record == None:
+                return status, None
 
                 
-    
 class Sort(Filter):
     """Sort all input records alphabetically.
     """
 
     def __init__(self):
-        Filter.__init__(self, 'Sort')
+        super().__init__('Sort')  
         self.sort = []
 
+    def next_record(self, status, record):
+        if status == 'Open':
+            if record == None:
+                return status, None
+            elif record != None:
+                self.sort.append(record)
+                return status, None
+        elif status == 'Closed':
+            if record == None:
+                return status, None
+            elif record != None:
+                if len(self.sort) == 0:
+                    return status, ' | '.join(sorted(record.split(' | ')))       
+                else:
+                    return status, ' | '.join(sorted(self.sort))
 
-    def __eq__(self, other): # FIXME: for what?
-        return self.title == other.title
-        
-
-    def next_record(self, record):
-        if record == None:
-            return self.sort # FIXME: but when does the actual sorting take place?
-            # FIXME: also, this returns a list where the others return a single record
-        else:
-            self.sort.append(record)
-            return # 'return None' (all explicit or none explicit)
-
-        
-    
-class Pipe(Filter):
+class Pipe():
     """Given a bunch of filters, run them in order.
     """
 
     def __init__(self, *args):
-        self.title = 'Pipe'
-        self.filters = args # 'filters' instead of 'filter_list' in case you change your mind about implementation
-        
-
-    def __eq__(self, other): # FIXME: why?
-        return self.title == other.title
+        self.filters = args 
     
 
     def run(self):
         """Run the given filters in order, passing the output of each to the next.
         """
 
-        # FIXME: we'll discuss this one...
-
-        self.record = []
-        self.results = []
-        streaming = True
-        while streaming:
-            filter_output = []
+        record = None
+        status = None
+        while True:
             for filter in self.filters:
-                record = filter.next_record(self.record)
-                filter_output.append(record)
-                if filter == Reader(): # FIXME: no no no no no....
-                    self.record = record
-                    if record == None:
-                        streaming = False
-                        
-            self.results.append(filter_output)
-        return self.results
+                status, record = filter.next_record(status, record)
+            if status == 'Closed':
+                return record # This only returns the last record if Head or Sort act on the output of Reader. Would it ever be necessary to return the output of each record as a push? I can see pulling through the pipeline if a structural scan is written to disk, but it would be good to have the option for data types I haven't considered yet. However, if I move the return statement to get the individual records, Pipe acts like an iterator, pausing to wait for the next call to Pipe.run(). Any suggestions? 
