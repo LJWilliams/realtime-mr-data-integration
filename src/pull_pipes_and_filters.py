@@ -38,8 +38,8 @@ class Reader(Filter):
         self.file.close()
         return self
         
-    def next_record(self, status, record):
-        if status == 'Open':
+    def next_record(self, stream, record):
+        if stream == 'Open':
             # if closed or doesn't exist, open self.filename
             try:
                 if self.file.closed: 
@@ -50,15 +50,14 @@ class Reader(Filter):
             try:
                 record = self.file.readlines(1)[0]
             except IndexError:
-                return status, None
-            return status, record  
-        elif status == 'Closed':
+                return stream, None
+            return stream, record  
+        elif stream == 'Closed':
             if record != None:
                 self = Reader.finish(self)
-                print(self.title, 'closing')
-                return status, record
+                return stream, record
             elif record == None:
-                return status, None
+                return stream, None
 
 class Trim(Filter):
     """Trim input records to 'ntrim' columns or less."""
@@ -68,18 +67,18 @@ class Trim(Filter):
         self.ntrim = ntrim
         self.trim = []
           
-    def next_record(self, status, record):
-        if status == 'Open':
+    def next_record(self, stream, record):
+        if stream == 'Open':
             if record != None:
                 self.trim.append(record[:self.ntrim])
-                return status, None
+                return stream, None
             elif record == None:
-                return status, None
-        elif status == 'Closed':
+                return stream, None
+        elif stream == 'Closed':
             if len(self.trim) == 0:
-                return status, ' | '.join(item[:self.ntrim] for item in record.split(' | '))
+                return stream, ' | '.join(item[:self.ntrim] for item in record.split(' | '))
             else:
-                return status, ' | '.join(self.trim)  
+                return stream, ' | '.join(self.trim)  
 
                 
 class Head(Filter):
@@ -90,23 +89,24 @@ class Head(Filter):
         super().__init__('Head')
         self.nhead = nhead
         self.head = []
+        self.index = 0
         
         
-    def next_record(self, status, record):
-        if status == 'Open':
+    def next_record(self, stream, record):
+        if stream == 'Open':
             if record == None:
-                return status, None
+                return stream, None
             elif record != None:
-                self.head.append(record)
-                return status, None
-        elif status == 'Closed':
-            if record != None:
-                if len(self.head) == 0:
-                    return status, ' | '.join(record.split(' | ')[:self.nhead])
-                else:
-                    return status, ' | '.join(self.head[:self.nhead])
-            elif record == None:
-                return status, None
+                if self.index <= self.nhead:
+                    self.head.append(record)
+                self.index += 1
+                return stream, None
+        elif stream == 'Closed':
+            if len(self.head) == 0:
+                return stream, ' | '.join(record.split(' | ')[:self.nhead])
+            else:
+                return stream, ' | '.join(self.head[:self.nhead])
+
 
                 
 class Sort(Filter):
@@ -117,21 +117,19 @@ class Sort(Filter):
         super().__init__('Sort')  
         self.sort = []
 
-    def next_record(self, status, record):
-        if status == 'Open':
+    def next_record(self, stream, record):
+        print(stream, record)
+        if stream == 'Open':
             if record == None:
-                return status, None
+                return stream, None
             elif record != None:
                 self.sort.append(record)
-                return status, None
-        elif status == 'Closed':
-            if record == None:
-                return status, None
-            elif record != None:
-                if len(self.sort) == 0:
-                    return status, ' | '.join(sorted(record.split(' | ')))       
-                else:
-                    return status, ' | '.join(sorted(self.sort))
+                return stream, None
+        elif stream == 'Closed':
+            if len(self.sort) == 0:
+                return stream, ' | '.join(sorted(record.split(' | ')))       
+            else:
+                return stream, ' | '.join(sorted(self.sort))
 
 class Pipe():
     """Given a bunch of filters, run them in order.
@@ -147,18 +145,18 @@ class Pipe():
         """
 
         record = None
-        status = 'Open' # Needs to send command to Filter to open file
+        stream = 'Open' # Needs to send command to Filter to open file
         print('Use Ctrl-C to exit') # How to shut down loop
         while True:
             try:
                 for filter in self.filters:
-                    status, record = filter.next_record(status, record)
+                    stream, record = filter.next_record(stream, record)
                     time.sleep(.1)
-                print(filter.title, status, record)
-                if status == 'Closed':
+                    #print(filter.title, stream, record)
+                if stream == 'Closed':
                     return record
             except KeyboardInterrupt:
-                status = 'Closed'
+                stream = 'Closed'
                 pass
             
                 
