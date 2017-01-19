@@ -53,8 +53,12 @@ class Reader(Filter):
                 return status, None
             return status, record  
         elif status == 'Closed':
-            self = Reader.finish(self)
-            
+            if record != None:
+                self = Reader.finish(self)
+                print(self.title, 'closing')
+                return status, record
+            elif record == None:
+                return status, None
 
 class Trim(Filter):
     """Trim input records to 'ntrim' columns or less."""
@@ -70,15 +74,12 @@ class Trim(Filter):
                 self.trim.append(record[:self.ntrim])
                 return status, None
             elif record == None:
-                return status, record
+                return status, None
         elif status == 'Closed':
-            if record != None:
-                if len(self.trim) == 0:
-                    return status, ' | '.join(item[:self.ntrim] for item in record.split(' | '))
-                else:
-                    return status, ' | '.join(self.trim)
-            elif record == None:
-                return status, None  
+            if len(self.trim) == 0:
+                return status, ' | '.join(item[:self.ntrim] for item in record.split(' | '))
+            else:
+                return status, ' | '.join(self.trim)  
 
                 
 class Head(Filter):
@@ -148,16 +149,22 @@ class Pipe():
         record = None
         status = 'Open' # Needs to send command to Filter to open file
         print('Use Ctrl-C to exit') # How to shut down loop
-        try:
-            while status == 'Open':
+        while True:
+            try:
                 for filter in self.filters:
                     status, record = filter.next_record(status, record)
                     time.sleep(.1)
-        except KeyboardInterrupt:
-            pass
-        status = 'Closed'
-        filter.next_record(status, record)
-        print('filter closed')
-        return record
+                print(filter.title, status, record)
+                if status == 'Closed':
+                    return record
+            except KeyboardInterrupt:
+                status = 'Closed'
+                pass
+            
+                
+
+                
+        
+            #raise stored_exception[0], stored_exception[1], stored_exception[2]
         
 
