@@ -12,8 +12,6 @@ and print that as output.
 Input is a txt file (strings) and returns a string delimited by |.
 """
 
-#import polling
-
 class Filter():
     """Base class of all filters, intended for use in Pipe.
     """
