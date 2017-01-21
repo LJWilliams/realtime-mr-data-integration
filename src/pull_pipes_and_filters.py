@@ -29,6 +29,7 @@ class Filter():
         index = [ filter.title for filter in filters ].index(self.title)
         if filters[index-1].title != self.title:
             status, record = filters[index-1].next_record(filters)
+        print('Get Record: ', status, record)
         return status, record
 
 
@@ -91,20 +92,22 @@ class Head(Filter):
 
     def __init__(self, nhead=5):
         super().__init__('Head')
-        super().poll_filter()
         self.nhead = nhead
         self.head = []
         self.index = 0
         
         
-    def next_record(self, status, record):
+    def next_record(self, filters):
+        status, record = super().get_record(filters)
         if status == 'Open':
-            if record == None:
-                return status, None
-            elif record != None:
-                if self.index <= self.nhead:
-                    self.head.append(record)
+            if record != None and record.count('\n') == 1:
+                #if self.index <= self.nhead:
+                self.head.append(record)
                 self.index += 1
+                return status, None
+            elif record != None and record.count('\n') > 1:
+                return 'Closed', ' | '.join(record.split(' | ')[:self.nhead])
+            elif record == None:
                 return status, None
         elif status == 'Closed':
             if len(self.head) == 0:
