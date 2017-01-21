@@ -68,10 +68,10 @@ class Trim(Filter):
         status, record = super().get_record(filters)
              
         if status == 'Open':
-            if record != None and record.count('\n') == 1:
+            if record != None and record.count('|') == 0:
                 self.trim.append(record[:self.ntrim])
                 return  'Open', None
-            elif record != None and record.count('\n') > 1:
+            elif record != None and record.count('|') >= 1:
                 return 'Closed', ' | '.join(item[:self.ntrim] for item in record.split(' | '))
             elif record == None:
                 return 'Open', None
@@ -97,12 +97,12 @@ class Head(Filter):
     def next_record(self, filters):
         status, record = super().get_record(filters)
         if status == 'Open':
-            if record != None and record.count('\n') == 1:
+            if record != None and record.count('|') == 0:
                 #if self.index <= self.nhead:
                 self.head.append(record)
                 self.index += 1
                 return status, None
-            elif record != None and record.count('\n') > 1:
+            elif record != None and record.count('|') >= 1:
                 return 'Closed', ' | '.join(record.split(' | ')[:self.nhead])
             elif record == None:
                 return status, None
@@ -125,10 +125,10 @@ class Sort(Filter):
     def next_record(self, filters):
         status, record = super().get_record(filters)
         if status == 'Open':
-            if record != None and record.count('\n') == 1:
+            if record != None and record.count('|') == 0:
                 self.sort.append(record)
                 return status, None
-            elif record != None and record.count('\n') > 1:
+            elif record != None and record.count('|') >= 1:
                 return 'Closed', ' | '.join(sorted(record.split(' | ')))  
             if record == None:
                 return status, None
