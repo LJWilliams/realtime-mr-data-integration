@@ -29,7 +29,6 @@ class Filter():
         index = [ filter.title for filter in filters ].index(self.title)
         if filters[index-1].title != self.title:
             status, record = filters[index-1].next_record(filters)
-        print('Get Record: ', status, record)
         return status, record
 
 
@@ -123,15 +122,17 @@ class Sort(Filter):
 
     def __init__(self):
         super().__init__('Sort')  
-        super().poll_filter()
         self.sort = []
 
-    def next_record(self, status, record):
+    def next_record(self, filters):
+        status, record = super().get_record(filters)
         if status == 'Open':
-            if record == None:
-                return status, None
-            elif record != None:
+            if record != None and record.count('\n') == 1:
                 self.sort.append(record)
+                return status, None
+            elif record != None and record.count('\n') > 1:
+                return 'Closed', ' | '.join(sorted(record.split(' | ')))  
+            if record == None:
                 return status, None
         elif status == 'Closed':
             if len(self.sort) == 0:
@@ -151,10 +152,7 @@ class Pipe():
         """
         
         while True:
-            #for filter in self.filters:
             status, record = self.filters[-1].next_record(self.filters)
-            print(status, record)
-            #print(record)
             if status == 'Closed':
                 return record
 
