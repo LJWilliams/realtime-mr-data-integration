@@ -20,36 +20,26 @@ class Filter():
         """Construct common elements of all filters."""
         self.title = title 
         self.upstream = None
+        self.status = 'Open'
+        self.record = None
 
-    def finish(self):
-        return None
+    def finish(self, filter):  
+        print('Closing ' + filter.title)
+        filter.status = 'Closed'
+        return filter.record
     
-    def finish_upstream(self): # needs to work on both NONE and upstream
-        if self.upstream == None:
-            self.finish()
-    
-
-    #def get_record(self, filters):
-
-# FIXME: this is doing a search linear in the length of the pipeline
-# for each record.  How about giving each Filter an 'upstream' member
-# (set by Pipe when the Filters are constructed or when they're put
-# into the pipeline)?
-
-      #  index = [ filter.title for filter in filters ].index(self.title)
-      #  if filters[index-1].title != self.title:
-      #      status, record = filters[index-1].next_record(filters) # FIXME: see comment below
-      #  return status, record
-    
-
-# FIXME: since every Filter child class is supposed to have a
-# next_record method, I'd define something like this here:
-#
-# def next_record(self):
-#   raise NotImplementedError('derived class must implement next_record')
-#
-# with a docstring explaining the return protocol (string plus record).
-
+    @staticmethod
+    def finish_upstream(filter): 
+        if filter.status != 'Closed':
+            if filter.upstream == None:
+                filter.finish(filter)
+            elif filter.upstream != None:
+                if filter.upstream.status == 'Open':
+                    filter.finish_upstream(filter.upstream)
+                elif filter.upstream.status == 'Closed':
+                    filter.record = filter.finish(filter)  
+            return filter.record
+        
 
 class Reader(Filter):
     """Produce lines of text from a file one by one.
@@ -61,37 +51,46 @@ class Reader(Filter):
         pass
       
 
-    def finish(self):          
+    def finish(self, filter):  
+        print('Closing ' + self.title)
         self.file.close() # Good.
-        self.upstream = None # ? will this work ????
+        self.status = 'Closed'
+        return self.record
         
 
     def next_record(self):
         if self.upstream == None:
             try:
-                record = self.file.readlines(1)
+                self.record = self.file.readlines(1)
             except:
                 return None
         elif self.upstream != None:
-           record = self.upstream.next_record()
-        return record
+           self.record = self.upstream.next_self.record()
+        return self.record
                 
 
 
 class Trim(Filter):
-    """Trim input records to 'ntrim' columns or less."""
+    """Trim input self.records to 'ntrim' columns or less."""
 
     def __init__(self, ntrim=5):
         self.ntrim = ntrim
-        self.trim = [] # FIXME: why accumulate? why not return one by one as records come in?
         super().__init__('Trim')  
 
     def next_record(self):
         if self.upstream == None:
             return None
         else:
-            record = self.upstream.next_record()[0]
-            return [record[:self.ntrim]]
+            self.record = self.upstream.next_record()
+            if self.record != None: 
+                if len(self.record) > 0:
+                    if type(self.record[0]) == str:
+                        self.record = self.record[0][:self.ntrim]
+                    elif type(self.record[0]) == list:
+                        for index, subrecord in enumerate(self.record):
+                            self.record[index] = [subrecord[0][:self.ntrim]]
+                        return [self.record]
+
 
 class Head(Filter):
     """Echo the first N lines of input.
@@ -104,35 +103,46 @@ class Head(Filter):
         
     def next_record(self):
         if self.upstream == None:
-            record = None
+            self.record = None
         else:
-            if self.index >= self.nhead:
-                record = None
-            else:
-                record = self.upstream.next_record()
+            self.record = self.upstream.next_record()
+            if self.record != None:
+                if self.record != list():
+                    if type(self.record[0]) == str:
+                        if self.index >= self.nhead:
+                            self.record = None
+                        elif type(self.record[0]) == list:
+                            return self.record[:self.nhead]
         self.index += 1
-        return record
+        return self.record
 
                 
 class Sort(Filter):
-    """Sort all input records alphabetically.
+    """Sort all input self.records alphabetically.
     """
 
     def __init__(self):
         super().__init__('Sort')  
-        self.sort = [] # FIXME: yes, this one needs to accumulate
+        self.sort = [] 
      
-    def finish(self):
+    def finish(self, filter):
+        print('Closing ' + self.title)
+        self.status = 'Closed'
         return sorted(self.sort)
 
     def next_record(self):
-        if self.upstream == None:
-            record = None
-        else:
-            record = self.upstream.next_record()
-            if record != None:
-                self.sort.append(record)
-                return sorted(self.sort)
+        if self.upstream != None:
+            self.record = self.upstream.next_record()
+            if len(self.record) > 0:
+                if self.record[0] != list():
+                    if self.record != None:  
+                        self.sort.append(self.record)
+                        return sorted(self.sort)
+                    elif self.record[0] == list:
+                        return sorted(self.record)
+        return sorted(self.sort)
+            
+
 
 class Pipe():
     """Given a bunch of filters, run them in order.
@@ -145,17 +155,25 @@ class Pipe():
                 index = self.filters.index(filter) - 1
                 filter.upstream = self.filters[index]
         
+        for filtertitle in ('Reader', 'Trim', 'Head', 'Sort'):
+            self.rename_filters(filtertitle)
+        
+    def rename_filters(self, filtertitle):
+        indices = [i for i, x in enumerate(self.filters) if x.title == filtertitle]
+        for enum, index in enumerate(indices):
+            self.filters[index].title = filtertitle + str(enum)
+        
     def run(self):
         """Run the given filters in order, passing the output of each to the next.
         """
         record = None
-        while True:
-            record = self.filters[-1].next_record()
-            print(record)
+        index = 0
+        try:
+            while True:
+                record = self.filters[-1].next_record()
+        except KeyboardInterrupt:
+            while index < len(self.filters):
+                record = self.filters[-1].finish_upstream(self.filters[-1])
+                index += 1
             return record
-            
                 
-
-# FIXME: if I follow the logic here correctly, this loops until the
-# last filter says 'Closed', then returns a single record - unless the
-# filters are always return records in lists?
